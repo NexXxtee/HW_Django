@@ -1,5 +1,18 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
 
 {% block title %}
- Кафе
+    Кафе — Главная страница
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section (приветствие) -->
+    <section class="hero text-center bg-light py-5">
+        <div class="container">
+            <h1 class="display-4">Добро пожаловать в систему управления кафе!</h1>
+            <p class="lead">Здесь вы можете управлять клиентами, меню и заказами.</p>
+            <a href="{% url 'orders:customer_list' %}" class="btn btn-primary btn-lg">Управление клиентами</a>
+            <a href="{% url 'orders:menu_list' %}" class="btn btn-success btn-lg">Управление меню</a>
+            <a href="{% url 'orders:order_list' %}" class="btn btn-warning btn-lg">Управление заказами</a>
+        </div>
+    </section>
 {% endblock %}
