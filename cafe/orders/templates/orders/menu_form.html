@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ form.instance.pk|yesno:"Редактирование блюда,Добавление блюда" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ form.instance.pk|yesno:"Редактирование блюда,Добавление блюда" }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'orders:menu_list' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}
