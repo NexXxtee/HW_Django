@@ -3,7 +3,7 @@ from orders import views
 
 app_name = "orders"
 
-urlpatterns = [
+urlpatterns = [ 
     path('', views.main, name='main'),
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/add/', views.add_customer, name='add_customer'),
