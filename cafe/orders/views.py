@@ -1,142 +1,123 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404
+from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 from .models import Customer, MenuItem, Order, OrderItem
 from .forms import CustomerForm, MenuItemForm, OrderForm, OrderItemForm
 
+# Главная страница
+class MainView(TemplateView):
+    template_name = "orders/index.html"
 
-def main(request):
-    return render(request, 'orders/index.html')
-# Customers 
+# Customers
+class CustomerListView(ListView):
+    model = Customer
+    template_name = "orders/customer_list.html"
+    context_object_name = "customers"
 
-def customer_list(request):
-    customers = Customer.objects.all()
-    return render(request, 'orders/customer_list.html', {'customers': customers})
+class CustomerCreateView(CreateView):
+    model = Customer
+    form_class = CustomerForm
+    template_name = "orders/customer_form.html"
+    success_url = reverse_lazy("orders:customer_list")
 
-def add_customer(request):
-    if request.method == "POST":
-        form = CustomerForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("orders:customer_list")
-    else:
-        form = CustomerForm()
-    return render(request, "orders/customer_form.html", {"form": form})
+class CustomerUpdateView(UpdateView):
+    model = Customer
+    form_class = CustomerForm
+    template_name = "orders/customer_form.html"
+    success_url = reverse_lazy("orders:customer_list")
 
-def edit_customer(request, id):
-    customer = get_object_or_404(Customer, id=id)
-    if request.method == "POST":
-        form = CustomerForm(request.POST, instance=customer)
-        if form.is_valid():
-            form.save()
-            return redirect("orders:customer_list")
-    else:
-        form = CustomerForm(instance=customer)
-    return render(request, "orders/customer_form.html", {"form": form})
+class CustomerDeleteView(DeleteView):
+    model = Customer
+    template_name = "orders/customer_confirm_delete.html"
+    success_url = reverse_lazy("orders:customer_list")
 
-def delete_customer(request, id):
-    customer = get_object_or_404(Customer, id=id)
-    customer.delete()
-    return redirect("orders:customer_list")
+# Menu Items
+class MenuItemListView(ListView):
+    model = MenuItem
+    template_name = "orders/menu_list.html"
+    context_object_name = "menu_items"
 
+class MenuItemCreateView(CreateView):
+    model = MenuItem
+    form_class = MenuItemForm
+    template_name = "orders/menu_form.html"
+    success_url = reverse_lazy("orders:menu_list")
 
-# Menu Items 
+class MenuItemUpdateView(UpdateView):
+    model = MenuItem
+    form_class = MenuItemForm
+    template_name = "orders/menu_form.html"
+    success_url = reverse_lazy("orders:menu_list")
 
-def menu_list(request):
-    menu_items = MenuItem.objects.all()
-    return render(request, "orders/menu_list.html", {"menu_items": menu_items})
-
-def add_menu_item(request):
-    if request.method == "POST":
-        form = MenuItemForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("orders:menu_list")
-    else:
-        form = MenuItemForm()
-    return render(request, "orders/menu_form.html", {"form": form})
-
-def edit_menu_item(request, id):
-    menu_item = get_object_or_404(MenuItem, id=id)
-    if request.method == "POST":
-        form = MenuItemForm(request.POST, instance=menu_item)
-        if form.is_valid():
-            form.save()
-            return redirect("orders:menu_list")
-    else:
-        form = MenuItemForm(instance=menu_item)
-    return render(request, "orders/menu_form.html", {"form": form})
-
-def delete_menu_item(request, id):
-    menu_item = get_object_or_404(MenuItem, id=id)
-    menu_item.delete()
-    return redirect("orders:menu_list")
-
+class MenuItemDeleteView(DeleteView):
+    model = MenuItem
+    template_name = "orders/menu_confirm_delete.html"
+    success_url = reverse_lazy("orders:menu_list")
 
 # Orders
+class OrderListView(ListView):
+    model = Order
+    template_name = "orders/order_list.html"
+    context_object_name = "orders"
 
-def order_list(request):
-    orders = Order.objects.all()
-    return render(request, "orders/order_list.html", {"orders": orders})
+class OrderCreateView(CreateView):
+    model = Order
+    form_class = OrderForm
+    template_name = "orders/order_form.html"
+    success_url = reverse_lazy("orders:order_list")
 
-def add_order(request):
-    if request.method == "POST":
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            order = form.save()
-            return redirect("orders:order_list")
-    else:
-        form = OrderForm()
-    return render(request, "orders/order_form.html", {"form": form})
+class OrderUpdateView(UpdateView):
+    model = Order
+    form_class = OrderForm
+    template_name = "orders/order_form.html"
+    success_url = reverse_lazy("orders:order_list")
 
-def edit_order(request, id):
-    order = get_object_or_404(Order, id=id)
-    if request.method == "POST":
-        form = OrderForm(request.POST, instance=order)
-        if form.is_valid():
-            form.save()
-            return redirect("orders:order_list")
-    else:
-        form = OrderForm(instance=order)
-    return render(request, "orders/order_form.html", {"form": form})
+class OrderDeleteView(DeleteView):
+    model = Order
+    template_name = "orders/order_confirm_delete.html"
+    success_url = reverse_lazy("orders:order_list")
 
-def delete_order(request, id):
-    order = get_object_or_404(Order, id=id)
-    order.delete()
-    return redirect("orders:order_list")
+# Order Items
+class OrderItemListView(ListView):
+    model = OrderItem
+    template_name = "orders/order_item_list.html"
+    context_object_name = "items"
 
+    def get_queryset(self):
+        order = get_object_or_404(Order, id=self.kwargs["order_id"])
+        return order.items.all()
 
-# Order Items 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["order"] = get_object_or_404(Order, id=self.kwargs["order_id"])
+        return context
 
-def order_item_list(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    items = order.items.all()
-    return render(request, "orders/order_item_list.html", {"order": order, "items": items})
+class OrderItemCreateView(CreateView):
+    model = OrderItem
+    form_class = OrderItemForm
+    template_name = "orders/order_item_form.html"
+    
+    def form_valid(self, form):
+        order = get_object_or_404(Order, id=self.kwargs["order_id"])
+        order_item = form.save(commit=False)
+        order_item.order = order
+        order_item.save()
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse_lazy("orders:order_item_list", kwargs={"order_id": self.kwargs["order_id"]})
 
-def add_order_item(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    if request.method == "POST":
-        form = OrderItemForm(request.POST)
-        if form.is_valid():
-            order_item = form.save(commit=False)
-            order_item.order = order
-            order_item.save()
-            return redirect("orders:order_item_list", order_id=order.id)
-    else:
-        form = OrderItemForm()
-    return render(request, "orders/order_item_form.html", {"form": form})
+class OrderItemUpdateView(UpdateView):
+    model = OrderItem
+    form_class = OrderItemForm
+    template_name = "orders/order_item_form.html"
+    
+    def get_success_url(self):
+        return reverse_lazy("orders:order_item_list", kwargs={"order_id": self.object.order.id})
 
-def edit_order_item(request, id):
-    order_item = get_object_or_404(OrderItem, id=id)
-    if request.method == "POST":
-        form = OrderItemForm(request.POST, instance=order_item)
-        if form.is_valid():
-            form.save()
-            return redirect("orders:order_item_list", order_id=order_item.order.id)
-    else:
-        form = OrderItemForm(instance=order_item)
-    return render(request, "orders/order_item_form.html", {"form": form})
-
-def delete_order_item(request, id):
-    order_item = get_object_or_404(OrderItem, id=id)
-    order_id = order_item.order.id
-    order_item.delete()
-    return redirect("orders:order_item_list", order_id=order_id)
+class OrderItemDeleteView(DeleteView):
+    model = OrderItem
+    template_name = "orders/order_item_confirm_delete.html"
+    
+    def get_success_url(self):
+        return reverse_lazy("orders:order_item_list", kwargs={"order_id": self.object.order.id})

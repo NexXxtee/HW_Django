@@ -45,15 +45,28 @@ class Order(models.Model):
         ("Завершён", "Завершён"),
     ]
 
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Клиент")
-    items = models.ManyToManyField(MenuItem, through="OrderItem", verbose_name="Пункты меню")
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Общая сумма")
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="Ожидается", verbose_name="Статус")
+    customer = models.ForeignKey(
+        Customer, on_delete=models.CASCADE, verbose_name="Клиент"
+    )
+    items = models.ManyToManyField(
+        MenuItem, through="OrderItem", verbose_name="Пункты меню"
+    )
+    total_price = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, verbose_name="Общая сумма"
+    )
+    status = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default="Ожидается",
+        verbose_name="Статус",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     def calculate_total_price(self):
-        self.total_price = sum(item.menu_item.price * item.quantity for item in self.orderitem_set.all())
+        self.total_price = sum(
+            item.menu_item.price * item.quantity for item in self.orderitem_set.all()
+        )
         self.save()
 
     def __str__(self):
